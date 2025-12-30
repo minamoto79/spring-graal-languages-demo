@@ -1,0 +1,5 @@
+/org.graalvm.python.vfs/templates/index.html
+/org.graalvm.python.vfs/templates/login.html
+/org.graalvm.python.vfs/templates/base.html
+/org.graalvm.python.vfs/templates/about.html
+/org.graalvm.python.vfs/templates/contact.html
