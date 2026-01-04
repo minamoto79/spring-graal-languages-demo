@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/js/public/style.css">
   <title>Edit {{user.name}}</title>
 </head>
 <body>
   <h1>{{user.name}}</h1>
-  <form action="/user/{{user.id}}?_method=put" method="post">
+  <form action="/js/user/{{user.id}}?_method=put" method="post">
     <label for="user[name]">Name:
       <input type="text" name="user[name]" value="{{user.name}}">
     </label>
@@ -16,7 +16,7 @@
     <input type="submit" name="submit" value="Update">
   </form>
 
-  <form action="/user/{{user.id}}/pet" method="post">
+  <form action="/js/user/{{user.id}}/pet" method="post">
     <label for="pet[name]">Pet:
       <input type="text" name="pet[name]" placeholder="Pet Name">
     </label>

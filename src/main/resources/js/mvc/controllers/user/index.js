@@ -11,13 +11,18 @@ exports.engine = 'hbs';
 exports.before = function(req, res, next){
   var id = req.params.user_id;
   if (!id) return next();
-  // pretend to query a database...
-  process.nextTick(function(){
+
+  // Wrap in a Promise to work with your express.js shim's async handling
+  return new Promise((resolve) => {
+    // Perform lookup immediately since process.nextTick is missing
     req.user = db.users[id];
-    // cant find that user
-    if (!req.user) return next('route');
-    // found it, move on to the routes
-    next();
+
+    if (!req.user) {
+      next('route');
+    } else {
+      next();
+    }
+    resolve();
   });
 };
 
@@ -30,6 +35,11 @@ exports.edit = function(req, res, next){
 };
 
 exports.show = function(req, res, next){
+  if (!req.user) {
+    // If user isn't found, you can pass an error or redirect
+    return res.status(404).send('User not found');
+  }
+  console.log(`show user: ${req.user.id}`);
   res.render('show', { user: req.user });
 };
 

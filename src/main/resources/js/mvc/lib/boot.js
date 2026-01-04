@@ -4,9 +4,9 @@
  * Module dependencies.
  */
 
-var express = require('../../..');
-var fs = require('node:fs');
-var path = require('node:path');
+var express = require('/app/shims/express');
+var path = require('/app/shims/path');
+var fs = require('/app/shims/fs');
 
 module.exports = function(parent, options){
   var dir = path.join(__dirname, '..', 'controllers');
@@ -14,7 +14,7 @@ module.exports = function(parent, options){
   fs.readdirSync(dir).forEach(function(name){
     var file = path.join(dir, name)
     if (!fs.statSync(file).isDirectory()) return;
-    verbose && console.log('\n   %s:', name);
+    verbose && console.log(`\n   ${name}`);
     var obj = require(file);
     var name = obj.name || name;
     var prefix = obj.prefix || '';
@@ -69,11 +69,11 @@ module.exports = function(parent, options){
 
       // before middleware support
       if (obj.before) {
+        verbose && console.log(`     ${method.toUpperCase()} ${url} -> before -> ${key}`);
         app[method](url, obj.before, handler);
-        verbose && console.log('     %s %s -> before -> %s', method.toUpperCase(), url, key);
       } else {
+        verbose && console.log(`     ${method.toUpperCase()} ${url} -> ${key}`);
         app[method](url, handler);
-        verbose && console.log('     %s %s -> %s', method.toUpperCase(), url, key);
       }
     }
 

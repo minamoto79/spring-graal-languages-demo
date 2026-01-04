@@ -13,6 +13,7 @@ class GraalPyContext {
     init {
         context = GraalPyResources
             .contextBuilder()
+            .option("engine.WarnInterpreterOnly", "false")
             .build() // ②
         context.initialize(PYTHON) // ③
     }

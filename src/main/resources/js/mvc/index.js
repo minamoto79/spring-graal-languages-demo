@@ -4,11 +4,12 @@
  * Module dependencies.
  */
 
-var express = require('../..');
-var logger = require('morgan');
-var path = require('node:path');
-var session = require('express-session');
-var methodOverride = require('method-override');
+var express = require('/app/shims/express');
+var logger = require('/app/shims/morgan');
+var path = require('/app/shims/path');
+var session = require('/app/shims/express-session');
+var methodOverride = require('/app/shims/method-override');
+var ejs = require('/app/shims/ejs/ejs');
 
 var app = module.exports = express();
 
@@ -51,6 +52,7 @@ app.use(methodOverride('_method'));
 
 // expose the "messages" local variable when views are rendered
 app.use(function(req, res, next){
+  if (res._sent) return;
   var msgs = req.session.messages || [];
 
   // expose "messages" local variable
@@ -58,13 +60,32 @@ app.use(function(req, res, next){
 
   // expose "hasMessages"
   res.locals.hasMessages = !! msgs.length;
+  res.render = (view, locals = {}) => {
+    const app = res.app || req.app;                 // MUST be set by the dispatcher
+    const viewsDir = app.settings['views'];
+    const defaultExt = app.settings['view engine'] || 'ejs';
 
-  /* This is equivalent:
-   res.locals({
-     messages: msgs,
-     hasMessages: !! msgs.length
-   });
-  */
+    const hasExt = /\.[a-z0-9]+$/i.test(view);
+    const ext = (hasExt ? view.split('.').pop() : defaultExt);
+    const file = hasExt ? path.join(viewsDir, view)
+        : path.join(viewsDir, `${view}.${ext}`);
+
+    console.log(`locals: ${JSON.stringify(locals)}`)
+    console.log(`render template file:${file} reading`)
+    const tpl = __fs.readFile(file, 'utf8');
+    const ctx = Object.assign({}, app.locals, res.locals, locals);
+
+    const engine = app.engines[ext];
+    if (!engine) throw new Error(`No view engine for .${ext}`);
+
+    const html = engine(tpl, ctx, file);
+
+    res.type('text/html');
+    res.send(html);
+    res._sent = true;
+    return res;
+  };
+
 
   next();
   // empty or "flush" the messages so they
@@ -85,6 +106,7 @@ app.use(function(err, req, res, next){
 
 // assume 404 since no middleware responded
 app.use(function(req, res, next){
+  res.app = req.app || app;
   res.status(404).render('404', { url: req.originalUrl });
 });
 
@@ -93,3 +115,13 @@ if (!module.parent) {
   app.listen(3000);
   console.log('Express started on port 3000');
 }
+
+console.log('Express started');
+
+const handle = function(req, callback, error) {
+  app.handle(req).then(value => {
+    callback(value);
+  }).catch(err => {
+    error(err);
+  })
+};
